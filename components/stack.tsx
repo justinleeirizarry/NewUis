@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface StackProps {
   data: string[];
@@ -10,9 +11,11 @@ const Stack = ({ data, mode }: StackProps) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [clickedLines, setClickedLines] = useState<number[]>([]);
   const [stackOrder, setStackOrder] = useState<number[]>([]);
+  const [isMovedToBack, setIsMovedToBack] = useState<boolean[]>([]);
 
   useEffect(() => {
     setStackOrder(data.map((_, index) => index));
+    setIsMovedToBack(new Array(data.length).fill(false));
   }, [data]);
 
   const handleClick = (index: number) => {
@@ -25,6 +28,12 @@ const Stack = ({ data, mode }: StackProps) => {
     );
 
     if (mode === "moveToBack") {
+      setIsMovedToBack((current) => {
+        const newMovedToBack = [...current];
+        newMovedToBack[index] = !newMovedToBack[index];
+        return newMovedToBack;
+      });
+
       setStackOrder((current) => {
         const indexToRemove = current.indexOf(index);
         return [
@@ -39,6 +48,7 @@ const Stack = ({ data, mode }: StackProps) => {
   const renderItem = (index: number, sentence: string) => {
     const isHovered = hoveredIndex === index;
     const isClicked = clickedLines.includes(index);
+    const isMoved = isMovedToBack[index];
     const orderIndex =
       mode === "moveToBack" ? stackOrder.indexOf(index) : index;
     const topValue =
@@ -51,9 +61,10 @@ const Stack = ({ data, mode }: StackProps) => {
         onMouseEnter={() => setHoveredIndex(index)}
         onMouseLeave={() => setHoveredIndex(null)}
         onClick={() => handleClick(index)}
-        className={`absolute left-0 cursor-pointer transition-all duration-300 ease-out ${
-          isHovered || isClicked ? "scale-110" : ""
-        }`}
+        className={cn(
+          "absolute left-0 cursor-pointer transition-all duration-300 ease-out",
+          { "scale-110": isHovered || isClicked }
+        )}
         style={{
           top: `${topValue}px`,
           left: `${10 * orderIndex}px`,
@@ -61,11 +72,14 @@ const Stack = ({ data, mode }: StackProps) => {
         }}
       >
         <Card
-          className={`flex items-center justify-center bg-white shadow-md p-4 w-full min-h-[5rem] ${
-            isClicked ? "border-black bg-cyan-500 shadow-lg" : "border-black"
-          } border-2 rounded-lg transition-transform duration-300 ease-out ${
-            isHovered || isClicked ? "transform scale-1.1" : ""
-          }`}
+          className={cn(
+            "flex items-center justify-center shadow-md p-4 w-full min-h-[5rem] border-2 rounded-lg transition-transform duration-300 ease-out",
+            {
+              "bg-white border border-black shadow-lg": !isClicked && !isMoved,
+              " bg-cyan-500 shadow-lg": isClicked || isMoved,
+              "transform scale-1.1": isHovered || isClicked,
+            }
+          )}
         >
           <span
             className={`transition-opacity duration-200 ease-linear`}
