@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useChat } from "ai/react";
 import Stack from "@/components/stack";
+import { Card } from "@/components/ui/card";
 
 export default function Chat() {
   const { messages, input, handleInputChange, handleSubmit } = useChat();
@@ -13,14 +14,21 @@ export default function Chat() {
     content.split(/(?<!\d)\.(?!\d)/).filter(Boolean);
 
   return (
-    <div className="flex flex-col w-full max-w-4xl py-24 mx-auto">
-      {messages.map((message, msgIndex) => (
+    <div className="flex flex-col w-full max-w-4xl py-24 mx-auto ">
+      {messages.map((message) => (
         <div key={message.id} className="whitespace-pre-wrap">
           {message.role === "user" ? (
-            <>User: {message.content}</>
+            <div className="border-2 border-black rounded-lg p-12">
+              <h1 className="text-3xl font-black">
+                {message.content.toUpperCase()}
+              </h1>
+            </div>
           ) : (
-            <div className="flex flex-col justify-center align-center">
-              <Stack data={splitSentences(message.content)} />
+            <div>
+              <Stack
+                data={splitSentences(message.content)}
+                mode="togglePosition"
+              />
             </div>
           )}
         </div>
